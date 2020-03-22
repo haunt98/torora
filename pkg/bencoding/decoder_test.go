@@ -63,6 +63,31 @@ func TestDecoder_Decode(t *testing.T) {
 			wantErr: nil,
 		},
 		{
+			name:  "list",
+			input: "li1eli2eee",
+			wantResult: []interface{}{
+				int64(1),
+				[]interface{}{
+					int64(2),
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name:  "list",
+			input: "li1eli2eli3eeee",
+			wantResult: []interface{}{
+				int64(1),
+				[]interface{}{
+					int64(2),
+					[]interface{}{
+						int64(3),
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
 			name:       "list",
 			input:      "li1e",
 			wantResult: []interface{}{},
