@@ -121,6 +121,30 @@ func TestDecoder_Decode(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name:       "dict",
+			input:      "di1ei2ee",
+			wantResult: map[string]interface{}{},
+			wantErr:    fmt.Errorf("dict key must be string"),
+		},
+		{
+			name:       "dict",
+			input:      "d1:bi1e1:ai2ee",
+			wantResult: map[string]interface{}{},
+			wantErr:    fmt.Errorf("dict key must appear in lexicographical order"),
+		},
+		{
+			name:       "dict",
+			input:      "d1:ae",
+			wantResult: map[string]interface{}{},
+			wantErr:    fmt.Errorf("dict key missing value"),
+		},
+		{
+			name:       "dict",
+			input:      "d1:ai2e",
+			wantResult: map[string]interface{}{},
+			wantErr:    fmt.Errorf("dict missing e"),
+		},
 	}
 
 	for _, tc := range tests {
@@ -152,7 +176,7 @@ func compareErr(t *testing.T, want, got error) {
 
 func compareResult(t *testing.T, want, got interface{}) {
 	switch want.(type) {
-	case int64, string:
+	case nil, int64, string:
 		if got != want {
 			t.Errorf("want result [%+v] got result [%+v]\n", want, got)
 		}
@@ -191,4 +215,6 @@ func compareResult(t *testing.T, want, got interface{}) {
 	default:
 		t.Errorf("not implement type result")
 	}
+
+	return
 }
