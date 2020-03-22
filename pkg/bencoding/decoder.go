@@ -1,4 +1,5 @@
 // https://en.wikipedia.org/wiki/Bencode
+// https://www.bittorrent.org/beps/bep_0003.html
 package bencoding
 
 import (

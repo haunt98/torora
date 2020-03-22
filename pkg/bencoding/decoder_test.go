@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"torora/pkg/comparison"
 )
 
 func TestDecoder_Decode(t *testing.T) {
@@ -153,33 +154,16 @@ func TestDecoder_Decode(t *testing.T) {
 			decoder := NewDecoder(r)
 
 			gotResult, gotErr := decoder.Decode()
-			compareErr(t, tc.wantErr, gotErr)
+			comparison.CompareError(t, tc.wantErr, gotErr)
 			compareResult(t, tc.wantResult, gotResult)
 		})
 	}
 }
 
-func compareErr(t *testing.T, want, got error) {
-	if want == nil && got == nil {
-		return
-	}
-
-	if want != nil && got != nil {
-		if got.Error() != want.Error() {
-			t.Errorf("want err [%+v] got err [%+v]\n", want, got)
-		}
-		return
-	}
-
-	t.Errorf("want err [%+v] got err [%+v]\n", want, got)
-}
-
 func compareResult(t *testing.T, want, got interface{}) {
 	switch want.(type) {
 	case nil, int64, string:
-		if got != want {
-			t.Errorf("want result [%+v] got result [%+v]\n", want, got)
-		}
+		comparison.CompareInterface(t, want, got, "result")
 	case []interface{}:
 		parsedWant, ok := want.([]interface{})
 		if !ok {
@@ -191,11 +175,9 @@ func compareResult(t *testing.T, want, got interface{}) {
 			t.Errorf("got result is not list")
 		}
 
-		if len(parsedGot) != len(parsedWant) {
-			t.Errorf("want result len [%d] got result len [%d]", len(parsedWant), len(parsedGot))
-		}
+		comparison.CompareInterface(t, len(parsedWant), len(parsedGot), "len result")
 
-		for i := 0; i < len(parsedWant); i += 1 {
+		for i := 0; i < len(parsedGot); i += 1 {
 			compareResult(t, parsedWant[i], parsedGot[i])
 		}
 	case map[string]interface{}:
