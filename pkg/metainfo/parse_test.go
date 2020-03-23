@@ -2,6 +2,7 @@ package metainfo
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"torora/pkg/comparison"
 )
@@ -46,11 +47,13 @@ func TestParseInfo(t *testing.T) {
 		{
 			name: "info",
 			input: map[string]interface{}{
+				"name":         "name",
 				"piece length": int64(1),
 				"pieces":       "a",
 				"length":       int64(2),
 			},
 			wantInfo: Info{
+				Name:        "name",
 				PieceLength: 1,
 				Pieces:      "a",
 				Length:      2,
@@ -81,6 +84,7 @@ func TestParseMetainfo(t *testing.T) {
 			input: map[string]interface{}{
 				"announce": "a",
 				"info": map[string]interface{}{
+					"name":         "name",
 					"piece length": int64(1),
 					"pieces":       "b",
 					"length":       int64(2),
@@ -89,6 +93,7 @@ func TestParseMetainfo(t *testing.T) {
 			wantMetainfo: Metainfo{
 				Announce: "a",
 				Info: Info{
+					Name:        "name",
 					PieceLength: 1,
 					Pieces:      "b",
 					Length:      2,
@@ -108,12 +113,46 @@ func TestParseMetainfo(t *testing.T) {
 	}
 }
 
+func TestParse(t *testing.T) {
+	tests := []struct {
+		name         string
+		input        string
+		wantMetainfo Metainfo
+		wantErr      error
+	}{
+		{
+			name:  "parse",
+			input: "d8:announce1:a4:infod6:lengthi2e4:name1:b12:piece lengthi1e6:pieces1:cee",
+			wantMetainfo: Metainfo{
+				Announce: "a",
+				Info: Info{
+					Name:        "b",
+					PieceLength: 1,
+					Pieces:      "c",
+					Length:      2,
+					Files:       nil,
+				},
+			},
+			wantErr: nil,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			gotMetainfo, gotErr := Parse(strings.NewReader(tc.input))
+			comparison.CompareError(t, tc.wantErr, gotErr)
+			compareMetainfo(t, tc.wantMetainfo, gotMetainfo)
+		})
+	}
+}
+
 func compareFile(t *testing.T, want, got File) {
 	comparison.CompareInterface(t, want.Length, got.Length, "file/length")
 	comparison.CompareInterface(t, want.Path, got.Path, "file/path")
 }
 
 func compareInfo(t *testing.T, want, got Info) {
+	comparison.CompareInterface(t, want.Name, got.Name, "info/name")
 	comparison.CompareInterface(t, want.PieceLength, got.PieceLength, "info/piece length")
 	comparison.CompareInterface(t, want.Pieces, got.Pieces, "info/pieces")
 	comparison.CompareInterface(t, want.Length, got.Length, "info/length")

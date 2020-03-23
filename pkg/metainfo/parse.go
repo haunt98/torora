@@ -1,4 +1,5 @@
 // https://www.bittorrent.org/beps/bep_0003.html
+// https://en.wikipedia.org/wiki/Torrent_file
 package metainfo
 
 import (
@@ -14,6 +15,7 @@ type Metainfo struct {
 }
 
 type Info struct {
+	Name        string // name
 	PieceLength int64  // piece length
 	Pieces      string // pieces
 	Length      int64  // length
@@ -31,7 +33,7 @@ func Parse(r io.Reader) (Metainfo, error) {
 
 	raw, err := decoder.Decode()
 	if err != nil {
-		return Metainfo{}, nil
+		return Metainfo{}, err
 	}
 
 	return parseMetainfo(raw)
@@ -68,6 +70,13 @@ func parseInfo(raw interface{}) (Info, error) {
 	rawInfo, ok := raw.(map[string]interface{})
 	if !ok {
 		return Info{}, fmt.Errorf("info is not dict")
+	}
+
+	if _, ok = rawInfo["name"]; !ok {
+		return Info{}, fmt.Errorf("info missing name")
+	}
+	if result.Name, ok = rawInfo["name"].(string); !ok {
+		return Info{}, fmt.Errorf("info/name is not string")
 	}
 
 	if _, ok = rawInfo["piece length"]; !ok {
